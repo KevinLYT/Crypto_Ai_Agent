@@ -7,11 +7,14 @@ from typing import Dict
 
 from fastapi import APIRouter, HTTPException
 
+from app.models.agent_schemas import AgentAnalyzeWalletRequest, AgentAnalyzeWalletResponse
 from app.models.schemas import AnalyzeWalletRequest, AnalyzeWalletResponse
+from app.services.agent_runner import AgentConfigurationError, run_wallet_agent
 from app.services.ai_analysis import analyze_wallet_ai
 from app.services.feature_extraction import extract_features
 from app.services.mock_data import build_default_mock_transactions
 from app.services.wallet_resolve import infer_wallet_from_transactions, resolve_wallet_address
+from utils.config import get_settings
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +24,23 @@ router = APIRouter()
 @router.get("/health")
 async def health() -> Dict[str, str]:
     return {"status": "ok"}
+
+
+@router.post("/agent/analyze-wallet", response_model=AgentAnalyzeWalletResponse)
+async def agent_analyze_wallet(body: AgentAnalyzeWalletRequest) -> AgentAnalyzeWalletResponse:
+    """
+    LangChain tool-calling agent: model chooses tools based on the question.
+
+    Requires OPENAI_API_KEY (tool-calling + final answer). POST /analyze-wallet remains available without it.
+    """
+    try:
+        settings = get_settings()
+        return await run_wallet_agent(body.wallet_address, body.question, settings=settings)
+    except AgentConfigurationError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("agent analyze-wallet failed: %s", exc)
+        raise HTTPException(status_code=502, detail="智能体执行失败，请稍后重试或查看日志。") from exc
 
 
 @router.post("/analyze-wallet", response_model=AnalyzeWalletResponse)

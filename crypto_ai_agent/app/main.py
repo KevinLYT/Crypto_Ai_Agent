@@ -31,4 +31,7 @@ app.include_router(router)
 
 @app.get("/")
 async def root() -> Dict[str, str]:
-    return {"message": "POST /analyze-wallet", "docs": "/docs"}
+    return {
+        "message": "POST /analyze-wallet (pipeline) or POST /agent/analyze-wallet (LangChain agent)",
+        "docs": "/docs",
+    }
