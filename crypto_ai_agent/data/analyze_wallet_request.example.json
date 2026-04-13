@@ -1,0 +1,21 @@
+{
+  "wallet_address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "mock_transactions": [
+    {
+      "timestamp": "2024-06-01T10:00:00Z",
+      "from_address": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "to_address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "amount": 100.0,
+      "token": "USDT",
+      "tx_type": "transfer"
+    },
+    {
+      "timestamp": "2024-06-01T10:15:00Z",
+      "from_address": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "to_address": "0xcccccccccccccccccccccccccccccccccccccccc",
+      "amount": 95.0,
+      "token": "USDT",
+      "tx_type": "transfer"
+    }
+  ]
+}
