@@ -6,6 +6,36 @@
 
 **Stack highlights:** `FastAPI` · `Pydantic` · `pytest` · rules + optional `OpenAI` · `LangChain` + `langchain-openai` (single-turn agent, **no LangGraph**)
 
+## Configuration / 配置
+
+### English
+
+The project keeps configuration intentionally small and environment-driven:
+
+- `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_MODEL`
+- `LOG_LEVEL`
+- feature thresholds:
+  - `LARGE_TX_MULTIPLIER`
+  - `HIGH_FREQ_TX_PER_DAY`
+  - `HIGH_FREQ_BURST_WINDOW_SECONDS`
+  - `HIGH_FREQ_BURST_MIN_COUNT`
+
+This keeps the MVP easy to run locally while making analysis behavior and logging more explicit.
+
+### 中文
+
+项目当前配置刻意保持轻量，主要通过环境变量驱动：
+
+- `OPENAI_API_KEY`、`OPENAI_BASE_URL`、`OPENAI_MODEL`
+- `LOG_LEVEL`
+- 特征提取阈值：
+  - `LARGE_TX_MULTIPLIER`
+  - `HIGH_FREQ_TX_PER_DAY`
+  - `HIGH_FREQ_BURST_WINDOW_SECONDS`
+  - `HIGH_FREQ_BURST_MIN_COUNT`
+
+这样既方便本地运行，也让分析阈值与日志行为更加明确。
+
 ---
 
 ## At a glance / 当前能力一览

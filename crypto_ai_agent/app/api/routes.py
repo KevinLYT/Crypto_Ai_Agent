@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict
+from typing import Dict, List, Tuple
 
 from fastapi import APIRouter, HTTPException
 
 from app.models.agent_schemas import AgentAnalyzeWalletRequest, AgentAnalyzeWalletResponse
-from app.models.schemas import AnalyzeWalletRequest, AnalyzeWalletResponse
+from app.models.schemas import AnalyzeWalletRequest, AnalyzeWalletResponse, Transaction
 from app.services.agent_runner import AgentConfigurationError, run_wallet_agent
 from app.services.ai_analysis import analyze_wallet_ai
 from app.services.feature_extraction import extract_features
@@ -19,6 +19,28 @@ from utils.config import get_settings
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+def _resolve_analysis_input(body: AnalyzeWalletRequest) -> Tuple[str, List[Transaction]]:
+    """
+    Normalize request input into `(wallet_address, transactions)`.
+
+    The runtime behavior is unchanged; this helper exists to keep the route thin
+    and make the fixed pipeline steps easier to follow.
+    """
+    if body.mock_transactions:
+        txs = list(body.mock_transactions)
+        wallet = (
+            body.wallet_address.strip().lower()
+            if body.wallet_address
+            else infer_wallet_from_transactions(txs)
+        )
+        return wallet, txs
+
+    assert body.wallet_address is not None
+    txs = build_default_mock_transactions(body.wallet_address)
+    wallet = resolve_wallet_address(body.wallet_address, txs)
+    return wallet, txs
 
 
 @router.get("/health")
@@ -35,6 +57,7 @@ async def agent_analyze_wallet(body: AgentAnalyzeWalletRequest) -> AgentAnalyzeW
     """
     try:
         settings = get_settings()
+        logger.info("agent wallet analysis requested for wallet=%s", body.wallet_address.strip().lower())
         return await run_wallet_agent(body.wallet_address, body.question, settings=settings)
     except AgentConfigurationError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
@@ -49,17 +72,8 @@ async def analyze_wallet(body: AnalyzeWalletRequest) -> AnalyzeWalletResponse:
     分析钱包：可传 wallet_address（自动 mock）、或传 mock_transactions。
     """
     try:
-        if body.mock_transactions:
-            txs = list(body.mock_transactions)
-            wallet = (
-                body.wallet_address.strip().lower()
-                if body.wallet_address
-                else infer_wallet_from_transactions(txs)
-            )
-        else:
-            assert body.wallet_address is not None
-            txs = build_default_mock_transactions(body.wallet_address)
-            wallet = resolve_wallet_address(body.wallet_address, txs)
+        wallet, txs = _resolve_analysis_input(body)
+        logger.info("fixed wallet analysis requested for wallet=%s tx_count=%s", wallet, len(txs))
         features = extract_features(wallet, txs)
         analysis = await analyze_wallet_ai(wallet, features)
 

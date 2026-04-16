@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     openai_api_key: Optional[str] = None
     openai_base_url: str = "https://api.openai.com/v1"
     openai_model: str = "gpt-4o-mini"
+    log_level: str = "INFO"
 
     large_tx_multiplier: float = 3.0
     high_freq_tx_per_day: float = 8.0

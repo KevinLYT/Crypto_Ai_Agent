@@ -9,15 +9,20 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.api.routes import router
+from utils.config import get_settings
+from utils.logging import configure_logging
 
-logging.basicConfig(level=logging.INFO)
+configure_logging(get_settings().log_level)
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     # 预留：启动时初始化链上客户端、连接池、向量索引等
+    logger.info("application startup")
     yield
     # 预留：关闭资源
+    logger.info("application shutdown")
 
 
 app = FastAPI(
